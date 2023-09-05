@@ -125,7 +125,7 @@ class Agente:
                 matrix[i, j] = [0]
         return matrix
 
-    # Preenche células da Matrix com agente, Wumpus e Ouro
+    # Preenche células da Matrix com agente, Buraco, Wumpus e Ouro
     def _Preencher_WM_Random(self):
         WM = self._Gerar_Matriz_Wumpus()
         limite_objetos = 20
@@ -227,38 +227,8 @@ class Agente:
         self.WM, self.WS, self.linha_agente, self.coluna_agente = self._GeraMatrizes_Posicao_Inicial_Agente()
         # Alterar Tela
 
-    # Responde ao botao Direita
-    def Direita(self):
-        print('Movimento a direita')
-        # Alterar tela
 
-    # Responde ao botao Esquerda
-    def Esquerda(self):
-        print('Movimento a esquerda')
-        # Alterar tela
-
-    # Responde ao botao PraCima
-    def PraCima(self):
-        print('Movimento para cima')
-        # Alterar tela
-
-    # Responde ao botao PraCima
-    def PraCima(self):
-        print('Movimento para baixo')
-        # Alterar Tela
-
-    def _CaiuBuraco(self):
-        print('Caiu no Buraco')
-        # Alterar Tela
-
-    def _CaiuWumpus(self):
-        print('Caiu no Wumpus')
-        # Alterar tela
-
-    def _AchouTesouro(self):
-        print('Achou Tesouro')
-        # Alterar tela
-
+    # Manter para possivel futura implementação de agente autonomo
     def SimularJogo(self, njogadas):
         for i in range(njogadas):
             # Sortear a direção para qual ir
@@ -313,3 +283,15 @@ if __name__ == '__main__':
 
     # Plotar Matriz - só aceita n = 4
     PlotarMatriz(WS)
+
+    # Teste de Reset
+    agente.Reset()
+
+    # Obter Matriz de Labels
+    WS = agente.GetWS()
+    print("Matriz Wumpus de Strings WS:")
+    print(WS)
+
+    # Plotar Matriz - só aceita n = 4
+    PlotarMatriz(WS)
+
