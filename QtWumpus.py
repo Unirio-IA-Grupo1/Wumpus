@@ -19,6 +19,9 @@ class QtWumpus(QWidget):
         # agente = Agente(n)
         self.agente = ag.Agente(self.n)  # Default assume n = 4
 
+        # Determina o estado do jogo
+        self.jogo_acabou = False
+
         # Imprimir Dados do Jogo Wumpus
         print(self.agente)
 
@@ -84,8 +87,8 @@ class QtWumpus(QWidget):
         self.pixels_y_estado_coords = int(self.y_estado_coords * self.pixels_per_cm)
 
         # tamanho labels de estado e alerta
-        self.pixels_x_estado_alerta_size = self.pixels_x_button_size
-        self.pixels_y_estado_alerta_size = self.pixels_y_button_size
+        self.pixels_x_estado_alerta_size = 200
+        self.pixels_y_estado_alerta_size = 50
 
         # posicao do labels de conteudo do estado
         self.x_conteudo_estado_coords =  self.x_estado_coords  # cm
@@ -132,7 +135,7 @@ class QtWumpus(QWidget):
         self.Interface_Matriz_Labels()
 
         # Inserindo Labels de Estado e Alerta
-        self.Interface_Labels_Estado_Alerta()
+        self.label_conteudo_alerta = self.Interface_Labels_Estado_Alerta()
 
 
         self.show()
@@ -166,7 +169,6 @@ class QtWumpus(QWidget):
         botao_direita.clicked.connect(self.Direita)
 
     def Interface_Labels_Estado_Alerta(self):
-
         '''
         label_estado = QLabel('<b>Estado</b>', self)
         label_estado.resize(self.pixels_x_estado_alerta_size, self.pixels_y_estado_alerta_size)
@@ -185,10 +187,12 @@ class QtWumpus(QWidget):
         label_alerta.move(self.pixels_x_alerta_coords, self.pixels_y_alerta_coords)
         label_alerta.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        label_conteudo_alerta = QLabel('Limite', self)
+        label_conteudo_alerta = QLabel("Inicio de Jogo", self)
         label_conteudo_alerta.resize(self.pixels_x_estado_alerta_size, self.pixels_y_estado_alerta_size)
         label_conteudo_alerta.move(self.pixels_x_conteudo_alerta_coords, self.pixels_y_conteudo_alerta_coords)
         label_conteudo_alerta.setStyleSheet("border: 1px solid black;")
+
+        return label_conteudo_alerta
 
 
 
@@ -275,6 +279,7 @@ class QtWumpus(QWidget):
         print("Nova Matriz Wumpus Códigos Inteiros WM:")
         print(self.WM)
         print("\n")
+        self.label_conteudo_alerta.setText("Jogo Iniciou!")
 
         # Obter Matriz de Labels
         self.WS = self.agente.GetWS()
@@ -283,6 +288,9 @@ class QtWumpus(QWidget):
         self._DeleteGridLabelMatrix()
         self._DeleteGridLabel()
         self.Interface_Matriz_Labels()
+        self.jogo_acabou = False
+
+
 
     # Elimina redundancia de Strings na lista de Strings
     # a ser mostrada nos Labels da Matriz Wumpus
@@ -312,52 +320,87 @@ class QtWumpus(QWidget):
     def PraCima(self):
         print('Pra Cima')
         if self.linha_agente == 0:
-          print('Limite')
+            print('Limite')
+            self.label_conteudo_alerta.setText("Chegou no Limite")
+        elif self.jogo_acabou:
+            self._MensagemFimJogo()
         else:
-          self._ApagaLabel()
-          self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
-          self.linha_agente -= 1
-          self.WM[self.linha_agente, self.coluna_agente].append(1)
-          self.WS[self.linha_agente, self.coluna_agente].append("agente")
-          self._EscreveLabel()
+            self.label_conteudo_alerta.setText("Andou Pra Cima")
+            self._ApagaLabel()
+            self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
+            self.linha_agente -= 1
+            self.WM[self.linha_agente, self.coluna_agente].append(1)
+            self.WS[self.linha_agente, self.coluna_agente].append("Agente")
+            self._EscreveLabel()
+            self._VerificarFimJogo()
 
 
     def PraBaixo(self):
         print('Pra Baixo')
         if self.linha_agente == self.n-1:
-          print('Limite')
+            print('Limite')
+            self.label_conteudo_alerta.setText("Chegou no Limite")
+        elif self.jogo_acabou:
+            self._MensagemFimJogo()
         else:
-          self._ApagaLabel()
-          self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
-          self.linha_agente += 1
-          self.WM[self.linha_agente, self.coluna_agente].append(1)
-          self.WS[self.linha_agente, self.coluna_agente].append("agente")
-          self._EscreveLabel()
+            self.label_conteudo_alerta.setText("Andou Pra Baixo")
+            self._ApagaLabel()
+            self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
+            self.linha_agente += 1
+            self.WM[self.linha_agente, self.coluna_agente].append(1)
+            self.WS[self.linha_agente, self.coluna_agente].append("Agente")
+            self._EscreveLabel()
+            self._VerificarFimJogo()
 
     def Direita(self):
         print('Direita')
         if self.coluna_agente == self.n-1:
             print('Limite')
+            self.label_conteudo_alerta.setText("Chegou no Limite")
+        elif self.jogo_acabou:
+            self._MensagemFimJogo()
         else:
+            self.label_conteudo_alerta.setText("Andou Pra Direita")
             self._ApagaLabel()
             self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
             self.coluna_agente += 1
             self.WM[self.linha_agente, self.coluna_agente].append(1)
-            self.WS[self.linha_agente, self.coluna_agente].append("agente")
+            self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self._VerificarFimJogo()
 
     def Esquerda(self):
         print('Esquerda')
         if self.coluna_agente == 0:
             print('Limite')
+            self.label_conteudo_alerta.setText("Chegou no Limite")
+        elif self.jogo_acabou:
+            self._MensagemFimJogo()
         else:
+            self.label_conteudo_alerta.setText("Andou Pra Esquerda")
             self._ApagaLabel()
             self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
             self.coluna_agente -= 1
             self.WM[self.linha_agente, self.coluna_agente].append(1)
-            self.WS[self.linha_agente, self.coluna_agente].append("agente")
+            self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self._VerificarFimJogo()
 
+    def _VerificarFimJogo(self):
+        casasDerrota = [2,6]
+        casaVitoria = 5
+        if any(item in self.WM[self.linha_agente, self.coluna_agente] for item in casasDerrota):
+            print("Acabou!")
+            self.label_conteudo_alerta.setText("Oh não! Você perdeu :(")
+            self.jogo_acabou = True
+        if casaVitoria in self.WM[self.linha_agente, self.coluna_agente]:
+            print("Acabou!")
+            self.label_conteudo_alerta.setText("Parabéns! \nVocê Venceu! :)")
+            self.jogo_acabou = True
+
+    def _MensagemFimJogo(self):
+        print("O jogo acabou,\n aperte o botão reset para reiniciar")
+        self.label_conteudo_alerta.setText("O jogo acabou!\nAperte o botão Reset para reiniciar")
 
 if __name__ == '__main__':
     qt = QApplication(sys.argv)
