@@ -206,7 +206,7 @@ class QtWumpus(QWidget):
         # Iterate through the input list
         for string in input_list:
             # If the string is not in the set of unique strings, add it to the result list
-            if string not in unique_strings:
+            if string not in unique_strings and string != "Vazio":
                 result_list.append(string)
                 unique_strings.add(string)
 
