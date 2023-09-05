@@ -43,12 +43,12 @@ class QtWumpus(QWidget):
         # tamanhos de buttons e labels
         self.pixels_per_cm = 36.85613777652585
         # tamanho dos labels da Matriz Wumpus
-        self.label_size = 1.5 # cm
+        self.label_size = 2.5 # cm 1.5 para 2.5
         self.pixels_label = int(self.label_size*self.pixels_per_cm)
         # tamanho e posicao da tela
         self.screen_horiz_size = 29.7 # cm
         self.pixels_screen_horiz_size = int(self.screen_horiz_size * self.pixels_per_cm)
-        self.screen_vert_size = 21.0 # cm
+        self.screen_vert_size = 26.0 # cm 21 para 26
         self.pixels_screen_vert_size = int(self.screen_vert_size * self.pixels_per_cm)
         # tamanho dos botoes
         self.x_button_size = 2.0  # cm
@@ -109,9 +109,9 @@ class QtWumpus(QWidget):
 
         # margens da matriz de Labels Wumpus
         self.left_margin = int(9 * self.pixels_per_cm) # 7 cm
-        self.top_margin = int(4 * self.pixels_per_cm) # 4 cm
+        self.top_margin = int(4 * self.pixels_per_cm) # 4cm
         self.right_margin = int(2.5 * self.pixels_per_cm) # 2.5 cm
-        self.bottom_margin = int(2.5 * self.pixels_per_cm) # 2.5
+        self.bottom_margin = int(1.0 * self.pixels_per_cm) # de 2,5 para 1.0 cm
 
         # imagens png
         self.image_wumpus = 'wumpus.png'
@@ -192,11 +192,25 @@ class QtWumpus(QWidget):
 
 
 
+    def _Elimina_Redundancia_Lista_String(self, input_list):
+        # Create an empty set to store unique strings
+        unique_strings = set()
 
+        # Create a new list to store the result
+        result_list = []
+
+        # Iterate through the input list
+        for string in input_list:
+            # If the string is not in the set of unique strings, add it to the result list
+            if string not in unique_strings:
+                result_list.append(string)
+                unique_strings.add(string)
+
+        return result_list
 
     def Interface_Matriz_Labels(self):
         teste = False
-        #teste = True
+        # teste = True
 
         self.grid_layout.setContentsMargins(self.left_margin, self.top_margin, self.right_margin, self.bottom_margin)
 
@@ -207,9 +221,9 @@ class QtWumpus(QWidget):
 
                 # Join the list of strings with line breaks using <br> tag
                 if teste:
-                   formatted_text = "<br>".join(self.WS[row][col])  # Note the change in indexing
+                   formatted_text = "<br>".join(self._Elimina_Redundancia_Lista_String(self.WS[row][col]))  # Note the change in indexing
                 else:
-                    formatted_text = "<br>".join([" "])
+                   formatted_text = "<br>".join([" "])
 
                 # Create a QLabel and set the HTML-formatted text
                 self.grid_layout.label = QLabel(formatted_text)
@@ -270,19 +284,18 @@ class QtWumpus(QWidget):
         self._DeleteGridLabel()
         self.Interface_Matriz_Labels()
 
-
+    # Elimina redundancia de Strings na lista de Strings
+    # a ser mostrada nos Labels da Matriz Wumpus
     def _EscreveLabel(self):
         self. _DeleteGridLabel()
         # Join the list of strings with line breaks using <br> tag
-        formatted_text = "<br>".join(self.WS[self.linha_agente][self.coluna_agente])  # Note the change in indexing
+        formatted_text = "<br>".join(self._Elimina_Redundancia_Lista_String(self.WS[self.linha_agente][self.coluna_agente]))  # Note the change in indexing
         # Create a QLabel and set the HTML-formatted text
         new_label = QLabel(formatted_text)
 
         # Add the new QLabel to the QGridLayout at the specified position
         self.grid_layout.addWidget(new_label, self.linha_agente, self.coluna_agente)
         self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 2px solid black;")
-
-
 
     def _ApagaLabel(self):
         self._DeleteGridLabel()
