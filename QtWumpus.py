@@ -123,8 +123,17 @@ class QtWumpus(QWidget):
         self.setWindowTitle('Wumpus Game')
         self.setWindowIcon(QIcon(self.image_wumpus))
         self.setGeometry(150, 150, self.pixels_screen_horiz_size, self.pixels_screen_vert_size)
-        #self.setFixedWidth(self.pixels_screen_horiz_size)
-        #self.setFixedHeight(self.pixels_screen_vert_size)
+        # self.setFixedWidth(self.pixels_screen_horiz_size)
+        # self.setFixedHeight(self.pixels_screen_vert_size)
+
+        # Controle de modo: Teste ou Normal
+        self.teste = False
+
+        # Cria botão de chaveamento entre os modos Normal e Teste
+        self.botao_normal_teste = QPushButton('Normal=>Teste', self)
+        self.botao_normal_teste.resize(self.pixels_x_button_size+60, self.pixels_y_button_size)
+        self.botao_normal_teste.move(self.pixels_x_up_arrow_coords-50, self.pixels_y_up_arrow_coords + 180)
+        self.botao_normal_teste.clicked.connect(self._NormalTeste)
 
         # Inserindo um bloco de elemetos
         self.Interface_Botoes()
@@ -137,12 +146,24 @@ class QtWumpus(QWidget):
         # Inserindo Labels de Estado e Alerta
         self.label_conteudo_alerta = self.Interface_Labels_Estado_Alerta()
 
-
         self.show()
 
+    # Trata chaveamento do modo normal para modo teste e vice-versa
+    def _NormalTeste(self):
+        if not self.teste:
+          self.botao_normal_teste.setText("Teste => Normal")
+          self.teste = True
+        else:
+          self.botao_normal_teste.setText("Normal => Teste")
+          self.teste = False
 
+        self._DeleteGridLabelMatrix()
+        self._DeleteGridLabel()
+        self.Interface_Matriz_Labels()
 
     def Interface_Botoes(self):
+
+
         botao_pracima = QPushButton('PraCima', self)
         botao_pracima.resize(self.pixels_x_button_size, self.pixels_y_button_size)
         botao_pracima.move(self.pixels_x_up_arrow_coords, self.pixels_y_up_arrow_coords)
@@ -213,8 +234,6 @@ class QtWumpus(QWidget):
         return result_list
 
     def Interface_Matriz_Labels(self):
-        teste = False
-        # teste = True
 
         self.grid_layout.setContentsMargins(self.left_margin, self.top_margin, self.right_margin, self.bottom_margin)
 
@@ -224,7 +243,7 @@ class QtWumpus(QWidget):
 
 
                 # Join the list of strings with line breaks using <br> tag
-                if teste:
+                if self.teste:
                    formatted_text = "<br>".join(self._Elimina_Redundancia_Lista_String(self.WS[row][col]))  # Note the change in indexing
                 else:
                    formatted_text = "<br>".join([" "])
@@ -235,10 +254,7 @@ class QtWumpus(QWidget):
                 # Set QLabel to display text as HTML
                 self.grid_layout.label.setOpenExternalLinks(True)
 
-
-
                 # Set the border style
-
                 if row == self.linha_agente  and col == self.coluna_agente:
                     self.grid_layout.label.setStyleSheet("border: 2px solid black;")
                 else:
@@ -289,8 +305,6 @@ class QtWumpus(QWidget):
         self._DeleteGridLabel()
         self.Interface_Matriz_Labels()
         self.jogo_acabou = False
-
-
 
     # Elimina redundancia de Strings na lista de Strings
     # a ser mostrada nos Labels da Matriz Wumpus
@@ -406,4 +420,3 @@ if __name__ == '__main__':
     qt = QApplication(sys.argv)
     app = QtWumpus()
     sys.exit(qt.exec())
-
