@@ -123,8 +123,8 @@ class QtWumpus(QWidget):
         self.setWindowTitle('Wumpus Game')
         self.setWindowIcon(QIcon(self.image_wumpus))
         self.setGeometry(150, 150, self.pixels_screen_horiz_size, self.pixels_screen_vert_size)
-        self.setFixedWidth(self.pixels_screen_horiz_size)
-        self.setFixedHeight(self.pixels_screen_vert_size)
+        #self.setFixedWidth(self.pixels_screen_horiz_size)
+        #self.setFixedHeight(self.pixels_screen_vert_size)
 
         # Inserindo um bloco de elemetos
         self.Interface_Botoes()
