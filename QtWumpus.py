@@ -5,8 +5,6 @@ from PyQt6.QtCore import Qt
 import Agente as ag
 
 
-
-
 class QtWumpus(QWidget):
     def __init__(self):
         super().__init__()
@@ -169,6 +167,7 @@ class QtWumpus(QWidget):
 
     def Interface_Labels_Estado_Alerta(self):
 
+        '''
         label_estado = QLabel('<b>Estado</b>', self)
         label_estado.resize(self.pixels_x_estado_alerta_size, self.pixels_y_estado_alerta_size)
         label_estado.move(self.pixels_x_estado_coords, self.pixels_y_estado_coords)
@@ -179,6 +178,7 @@ class QtWumpus(QWidget):
         label_conteudo_estado.resize(self.pixels_x_estado_alerta_size, self.pixels_y_estado_alerta_size)
         label_conteudo_estado.move(self.pixels_x_conteudo_estado_coords, self.pixels_y_conteudo_estado_coords)
         label_conteudo_estado.setStyleSheet("border: 1px solid black;")
+        '''
 
         label_alerta = QLabel('<b>Alerta</b>', self)
         label_alerta.resize(self.pixels_x_estado_alerta_size, self.pixels_y_estado_alerta_size)
@@ -191,15 +191,33 @@ class QtWumpus(QWidget):
         label_conteudo_alerta.setStyleSheet("border: 1px solid black;")
 
 
+
+
+
     def Interface_Matriz_Labels(self):
-        # grid_layout = QGridLayout(self)
+        teste = False
+        #teste = True
+
         self.grid_layout.setContentsMargins(self.left_margin, self.top_margin, self.right_margin, self.bottom_margin)
 
         # Create a 10x10 matrix of labels
         for row in range(10):
             for col in range(10):
-                # label = QLabel(f"Label {row + 1}-{col + 1}")
-                self.grid_layout.label = QLabel(f" ")
+
+
+                # Join the list of strings with line breaks using <br> tag
+                if teste:
+                   formatted_text = "<br>".join(self.WS[row][col])  # Note the change in indexing
+                else:
+                    formatted_text = "<br>".join([" "])
+
+                # Create a QLabel and set the HTML-formatted text
+                self.grid_layout.label = QLabel(formatted_text)
+
+                # Set QLabel to display text as HTML
+                self.grid_layout.label.setOpenExternalLinks(True)
+
+
 
                 # Set the border style
 
@@ -210,6 +228,8 @@ class QtWumpus(QWidget):
 
                 self.grid_layout.addWidget(self.grid_layout.label, row, col)
 
+        self._EscreveLabel()
+
     def _DeleteGridLabel(self):
         # Remove the label from the grid layout
         label_to_delete = self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente)
@@ -219,27 +239,74 @@ class QtWumpus(QWidget):
                 self.grid_layout.removeWidget(widget)
                 widget.deleteLater()
 
+    def _DeleteGridLabelMatrix(self):
+        # Iterate through rows and columns of the grid layout
+        for row in range(self.grid_layout.rowCount()):
+            for col in range(self.grid_layout.columnCount()):
+                label_to_remove = self.grid_layout.itemAtPosition(row, col)
+                if label_to_remove:
+                    # Remove and delete the label widget
+                    label_widget = label_to_remove.widget()
+                    label_widget.deleteLater()
+
     def Reset(self):
-        print('Reset')
+        self.agente.Reset()
+        # Obter Posição Inicial do agente
+        self.linha_agente, self.coluna_agente = self.agente.GetPosInicialAgente()
+        print("Posicao Inicial do Agente:")
+        print("linha_agente = %d" % (self.linha_agente))
+        print("coluna_agente = %d\n" % (self.coluna_agente))
+        # Obter Matriz de Códigos inteiros
+        self.WM = self.agente.GetWM()
+        print("Nova Matriz Wumpus Códigos Inteiros WM:")
+        print(self.WM)
+        print("\n")
+
+        # Obter Matriz de Labels
+        self.WS = self.agente.GetWS()
+        print("Nova Matriz Wumpus de Strings WS:")
+        print(self.WS)
+        self._DeleteGridLabelMatrix()
+        self._DeleteGridLabel()
+        self.Interface_Matriz_Labels()
+
+
+    def _EscreveLabel(self):
+        self. _DeleteGridLabel()
+        # Join the list of strings with line breaks using <br> tag
+        formatted_text = "<br>".join(self.WS[self.linha_agente][self.coluna_agente])  # Note the change in indexing
+        # Create a QLabel and set the HTML-formatted text
+        new_label = QLabel(formatted_text)
+
+        # Add the new QLabel to the QGridLayout at the specified position
+        self.grid_layout.addWidget(new_label, self.linha_agente, self.coluna_agente)
+        self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 2px solid black;")
+
+
+
+    def _ApagaLabel(self):
+        self._DeleteGridLabel()
+
+        # Create a new QLabel with an empty text
+        new_label = QLabel(f" ")
+
+
+        # Add the new QLabel to the QGridLayout at the specified position
+        self.grid_layout.addWidget(new_label, self.linha_agente, self.coluna_agente)
+        self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet(
+            "border: 1px solid black;")
 
     def PraCima(self):
         print('Pra Cima')
         if self.linha_agente == 0:
           print('Limite')
         else:
+          self._ApagaLabel()
+          self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
           self.linha_agente -= 1
-          if (self.WM[self.linha_agente, self.coluna_agente] == list([-1])):
-              print('Limite')
-              self.linha_agente += 1
-          else:
-              self.linha_agente += 1
-              self._DeleteGridLabel()
-              self.WM[self.linha_agente, self.coluna_agente] = list([-1])
-              self.linha_agente -= 1
-              self._DeleteGridLabel()
-              self.grid_layout.label = QLabel(f" ")
-              self.grid_layout.label.setStyleSheet("border: 2px solid black;")
-              self.grid_layout.addWidget(self.grid_layout.label, self.linha_agente, self.coluna_agente)
+          self.WM[self.linha_agente, self.coluna_agente].append(1)
+          self.WS[self.linha_agente, self.coluna_agente].append("agente")
+          self._EscreveLabel()
 
 
     def PraBaixo(self):
@@ -247,58 +314,36 @@ class QtWumpus(QWidget):
         if self.linha_agente == self.n-1:
           print('Limite')
         else:
+          self._ApagaLabel()
+          self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
           self.linha_agente += 1
-          if (self.WM[self.linha_agente, self.coluna_agente] == list([-1])):
-              print('Limite')
-              self.linha_agente -= 1
-          else:
-              self.linha_agente -= 1
-              self._DeleteGridLabel()
-              self.WM[self.linha_agente, self.coluna_agente] = list([-1])
-              self.linha_agente += 1
-              self._DeleteGridLabel()
-              self.grid_layout.label = QLabel(f" ")
-              self.grid_layout.label.setStyleSheet("border: 2px solid black;")
-              self.grid_layout.addWidget(self.grid_layout.label, self.linha_agente, self.coluna_agente)
+          self.WM[self.linha_agente, self.coluna_agente].append(1)
+          self.WS[self.linha_agente, self.coluna_agente].append("agente")
+          self._EscreveLabel()
 
     def Direita(self):
         print('Direita')
         if self.coluna_agente == self.n-1:
             print('Limite')
         else:
+            self._ApagaLabel()
+            self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
             self.coluna_agente += 1
-            if (self.WM[self.linha_agente, self.coluna_agente] == list([-1])):
-                print('Limite')
-                self.coluna_agente -= 1
-            else:
-                self.coluna_agente -= 1
-                self._DeleteGridLabel()
-                self.WM[self.linha_agente, self.coluna_agente] = list([-1])
-                self.coluna_agente += 1
-                self._DeleteGridLabel()
-                self.grid_layout.label = QLabel(f" ")
-                self.grid_layout.label.setStyleSheet("border: 2px solid black;")
-                self.grid_layout.addWidget(self.grid_layout.label, self.linha_agente, self.coluna_agente)
-
+            self.WM[self.linha_agente, self.coluna_agente].append(1)
+            self.WS[self.linha_agente, self.coluna_agente].append("agente")
+            self._EscreveLabel()
 
     def Esquerda(self):
         print('Esquerda')
         if self.coluna_agente == 0:
             print('Limite')
         else:
+            self._ApagaLabel()
+            self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet("border: 1px solid black;")
             self.coluna_agente -= 1
-            if (self.WM[self.linha_agente, self.coluna_agente] == list([-1])):
-                print('Limite')
-                self.coluna_agente += 1
-            else:
-                self.coluna_agente += 1
-                self._DeleteGridLabel()
-                self.WM[self.linha_agente, self.coluna_agente] = list([-1])
-                self.coluna_agente -= 1
-                self._DeleteGridLabel()
-                self.grid_layout.label = QLabel(f" ")
-                self.grid_layout.label.setStyleSheet("border: 2px solid black;")
-                self.grid_layout.addWidget(self.grid_layout.label, self.linha_agente, self.coluna_agente)
+            self.WM[self.linha_agente, self.coluna_agente].append(1)
+            self.WS[self.linha_agente, self.coluna_agente].append("agente")
+            self._EscreveLabel()
 
 
 if __name__ == '__main__':
