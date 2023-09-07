@@ -308,6 +308,7 @@ class QtWumpus(QWidget):
                 break
                 # pause()
                 # self.Reset()
+            self.label_conteudo_alerta.setText("Não convergiu D:!")
 
     def Jogar(self, jogada):
         # Direita
