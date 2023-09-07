@@ -99,6 +99,7 @@ class Agente:
         self.dict_efeitos = {'Wumpus': 'Cheiro', 'Buraco': 'Brisa', 'Ouro': 'Brilho'}
         # Matrizes de Listas e posicao inicial do agente
         self.WM, self.WS, self.linha_agente, self.coluna_agente = self._GeraMatrizes_Posicao_Inicial_Agente()
+        self.MO = []
 
     def __str__(self):
         stragente = 'Jogo Wumpus para :\n' +\
@@ -228,10 +229,9 @@ class Agente:
 
     def GetWM(self):
         return self.WM
-        
     def GetWS(self):
         return self.WS
-        
+
     def SetPosicaoAgente(self, linha_agente, coluna_agente):
         self.linha_agente = linha_agente
         self.coluna_agente = coluna_agente
@@ -271,17 +271,15 @@ class Agente:
     def _Construir_Matriz_Opcoes_Jogadas(self):
 
         Matriz_Opcoes = self._Gerar_Matriz_Opcoes()
-        print(Matriz_Opcoes)
+        # print(Matriz_Opcoes)
 
         linha = self.linha_agente
         coluna = self.coluna_agente
-        print('posicao inicial')
+        print('_Construir_Matriz_Opcoes_Jogadas: posicao inicial')
         print(linha)
         print(coluna)
 
         lista_pos = []
-
-        #for k in range(self.visibilidade):
 
         for key in self.dict_move.keys():
 
@@ -293,11 +291,20 @@ class Agente:
           for j in range(len(self.dict_move)):
             if (Matriz_Opcoes[jogada, j][0] == [-1]):
               if (self._FoiPossivelaJogada(linha, coluna, linha_jogada, coluna_jogada)):
+                '''
+                print('Antes de Atualizar Matriz Opcoes')
+                print(linha)
+                print(coluna)
+                print(linha_jogada)
+                print(coluna_jogada)
+                '''
+
                 Matriz_Opcoes[jogada, j][0] = self.WM[linha_jogada, coluna_jogada]
 
-        print('Matriz uma Jogada')
-        print(Matriz_Opcoes)
+        # print('Matriz uma Jogada')
+        # print(Matriz_Opcoes)
         Matriz_Opcoes = self._Pos_processar_Matriz_Opcoes(Matriz_Opcoes, lista_pos)
+        self.MO = Matriz_Opcoes
         return Matriz_Opcoes, lista_pos
 
 
@@ -316,23 +323,211 @@ class Agente:
 
         return Matriz_Opcoes
 
+    def find_max_indices(self, input_list):
+        if not input_list:
+            return None, []
+
+        max_value = max(input_list)
+        max_indices = [index for index, value in enumerate(input_list) if value == max_value]
+
+        return max_value, max_indices
+
+    def Jogar(self, jogada):
+        # Direita
+        if (jogada == 0):
+            if self.coluna_agente != self.n-1:
+              self.coluna_agente += 1
+        # Esquerda
+        elif (jogada == 1):
+            if self.coluna_agente != 0:
+              self.coluna_agente -= 1
+        # Pra Cima
+        elif (jogada == 2):
+            if self.linha_agente != 0:
+              self.linha_agente -= 1
+        # Prabaixo
+        elif (jogada == 3):
+            if self.linha_agente != self.n-1:
+              self.linha_agente += 1
+
+        self.MO, LP = self._Construir_Matriz_Opcoes_Jogadas()
+
 
     def SimularJogo(self):
-        MO, lista_pos = self._Construir_Matriz_Opcoes_Jogadas()
-        print('Matriz 2 Jogadas')
-        print(MO)
+        seqjogadas = []
+        # PlotarMatriz(self.WS)
+        njogadas = 20
+        for count in range(njogadas):
+            self.MO, lista_pos = self._Construir_Matriz_Opcoes_Jogadas()
+            #print('Matriz 2 Jogadas')
+            #print(self.MO)
+            paresestadosjogadas, listajogadas = self.ObterParesJogadas()
+            npossiveisjogadas = len(paresestadosjogadas)
+            notas = []
+            for indice in range(npossiveisjogadas):
+                notas.append(self.ObterNota(paresestadosjogadas[indice][0], paresestadosjogadas[indice][1]))
+                '''
+                if (self.ObterNota(paresestadosjogadas[indice][0], paresestadosjogadas[indice][1]) ==  None):
+                    print('indice = %d' %(indice))
+                    print(paresestadosjogadas[indice])
+                '''
+
+            print(notas)
+            print(max(notas))
+            max_value, max_indices = self.find_max_indices(notas)
+            print(max_value)
+            print(max_indices)
+            nsorteio = len(max_indices)
+            indsorteio = np.random.randint(0, nsorteio)
+            print('nsorteio')
+            print(nsorteio)
+            print('indsorteio')
+            print(indsorteio)
+            jogada = listajogadas[max_indices[indsorteio]]
+            print(jogada)
+            seqjogadas.append(self.dict_move[jogada])
+            print(seqjogadas)
+            self.Jogar(jogada)
+            print(self.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+            print(self.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+            print(max_value)
+            if (max_value == 10) or (max_value == 1):
+                print('Encerrar o Jogo')
+                print(self.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+                break
+                #pause()
+                #self.Reset()
+
+            pause()
+
+    def ObterNota(self, estadoaposjogada1, estadoaposjogada2):
+        Nota = 3
+        # estado apos jogada 1 = "Ouro"
+        if (estadoaposjogada1 == 5):
+            Nota = 10
+            return Nota
+        # estado apos jogada 1 = "Brilho", estado apos jogada 2 = "Ouro"
+        elif (estadoaposjogada1 == 7) and (estadoaposjogada2 == 5):
+            Nota = 9
+            return Nota
+        # estado apos jogada 1 = "Vazio", estado apos jogada2 = Brilho
+        elif (estadoaposjogada1 == 0) and (estadoaposjogada2 == 7):
+            Nota = 8
+            return Nota
+        # estado apos jogada 1 = "Cheiro", estado apos jogada2 = "Brilho
+        elif (estadoaposjogada1 == 4) and (estadoaposjogada2 == 7):
+            Nota = 7
+            return Nota
+        # estado apos jogada 1 = "Brisa", estado apos jogada2 = "Brilho
+        elif (estadoaposjogada1 == 3) and (estadoaposjogada2 == 7):
+            Nota = 7
+            return Nota
+        # estado apos jogada 1 = "Vazio", estado apos jogada2 = "Vazio"
+        elif (estadoaposjogada1 == 0) and (estadoaposjogada2 == 0):
+            Nota = 6
+            return Nota
+        # estado apos jogada 1 = "Vazio", estado apos jogada2 = "Cheiro"
+        elif (estadoaposjogada1 == 0) and (estadoaposjogada2 == 4):
+            Nota = 5
+            return Nota
+        # estado apos jogada 1 = "Vazio", estado apos jogada2 = "Brisa"
+        elif (estadoaposjogada1 == 0) and (estadoaposjogada2 == 3):
+            Nota = 4
+            return Nota
+        # estado apos jogada 1 = "Brisa", estado apos jogada2 = "Cheiro"
+        elif (estadoaposjogada1 == 3) and (estadoaposjogada2 == 4):
+            Nota = 3
+            return Nota
+        # estado apos jogada 1 = "Cheiro", estado apos jogada2 = "Brisa"
+        elif (estadoaposjogada1 == 4) and (estadoaposjogada2 == 3):
+            Nota = 3
+            return Nota
+        # estado apos jogada 1 = "Brisa", estado apos jogada2 = "Buraco"
+        elif (estadoaposjogada1 == 3) and (estadoaposjogada2 == 6):
+            Nota = 2
+            return Nota
+        # estado apos jogada 1 = "Cheiro", estado apos jogada2 = "Wumpus"
+        elif (estadoaposjogada1 == 3) and (estadoaposjogada2 == 2):
+            Nota = 2
+            return Nota
+        # estado apos jogada 1 = "Buraco"
+        elif (estadoaposjogada1 == 6):
+            Nota = 1
+            return Nota
+        # estado apos jogada 1 = "Wumpus"
+        elif (estadoaposjogada1 == 2):
+            Nota = 1
+            return Nota
+        # estado apos jogada 1 = "Impossivel"
+        elif (estadoaposjogada1 == -1):
+            Nota = 0
+            return Nota
+        elif (estadoaposjogada2 == 1):
+            return Nota
+        else:
+            return Nota
+
+    def _ReduzemImportancia(self, listaestado):
+        if -1  in listaestado:
+            return [-1]
+        if 6 in listaestado:
+            return [6]
+        if 2 in listaestado:
+            return [2]
+        if 5 in listaestado:
+            return [5]
+        if 3 in listaestado:
+            return [3]
+        if 4 in listaestado:
+            return [4]
+        if 7 in listaestado:
+            return [7]
+        if 0 in listaestado:
+            return [0]
+        if 1 in listaestado:
+            return [1]
+
+
+    def ObterParesJogadas(self):
+      paresestadosjogadas = []
+      listajogadas = []
+      num = len(self.MO[0])
+      for linha in range(num):
+        for coluna in range(num):
+
+            print(self.MO[linha][coluna][0])
+            est1 = self._ReduzemImportancia(self.MO[linha][coluna][0])
+            print('est1')
+            print(est1)
+            print(self.MO[linha][coluna][1])
+            est2 =  self._ReduzemImportancia(self.MO[linha][coluna][1])
+            print('est2')
+            print(est2)
+            for estjogada1 in est1:
+                for estjogada2 in est2:
+                    paresestadosjogadas.append([estjogada1, estjogada2])
+                    listajogadas.append(linha)
+
+
+      print(paresestadosjogadas)
+      print(len(paresestadosjogadas))
+      print(listajogadas)
+      print(len(listajogadas))
+
+      return paresestadosjogadas, listajogadas
+
 
 
 if __name__ == '__main__':
     # Gera a semente para os numeros aleatorios
-    GeraeEstabeleceSeed()
+    # GeraeEstabeleceSeed()
 
     # Tamanho da Matriz
     n = 10
 
     # Criar agente
     # agente = Agente(n)
-    agente = Agente() # Default assume n = 4
+    agente = Agente(n) # Default assume n = 4
 
     # Imprimir Dados do Jogo Wumpus
     print(agente)
@@ -372,4 +567,3 @@ if __name__ == '__main__':
     '''
 
     agente.SimularJogo()
-
