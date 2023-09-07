@@ -442,6 +442,7 @@ class QtWumpus(QWidget):
             self.WM[self.linha_agente, self.coluna_agente].append(1)
             self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
 
 
@@ -460,6 +461,7 @@ class QtWumpus(QWidget):
             self.WM[self.linha_agente, self.coluna_agente].append(1)
             self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
 
     def Direita(self):
@@ -477,6 +479,7 @@ class QtWumpus(QWidget):
             self.WM[self.linha_agente, self.coluna_agente].append(1)
             self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
 
     def Esquerda(self):
@@ -494,6 +497,7 @@ class QtWumpus(QWidget):
             self.WM[self.linha_agente, self.coluna_agente].append(1)
             self.WS[self.linha_agente, self.coluna_agente].append("Agente")
             self._EscreveLabel()
+            self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
 
     def _VerificarFimJogo(self):
