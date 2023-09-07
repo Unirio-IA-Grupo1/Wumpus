@@ -6,15 +6,19 @@ from idlelib import debugger
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QTimer
-import Agente as ag
+import Agente1 as ag
+import numpy as np
 
+def pause():
+    wait = input('type any char to continue\n')
+    print('stop')
 
 class QtWumpus(QWidget):
     def __init__(self):
         super().__init__()
 
         # Gera a semente para os numeros aleatorios
-        ag.GeraeEstabeleceSeed()
+        # ag.GeraeEstabeleceSeed()
 
         # Tamanho da Matriz
         self.n = 10
@@ -190,6 +194,8 @@ class QtWumpus(QWidget):
 
     def _umaJogada(self):
         MO, listaOp = self.agente._Construir_Matriz_Opcoes_Jogadas()
+        print('MO')
+        print(MO)
 
         melhorCasa = [4,-20]
 
@@ -208,51 +214,117 @@ class QtWumpus(QWidget):
 
 
         self._Jogada(melhorCasa[0])
+        MO, listaOp = self.agente._Construir_Matriz_Opcoes_Jogadas()
+        print('MO apos jogda')
+        print('MO')
+        print(MO)
+        # pause()
 
     def _Jogada(self,melhorCasa):
         print("Melhor jogada " + str(melhorCasa))
 
         if melhorCasa == 0:
             self.Direita()
-            self.Direita()
+            #self.Direita()
         elif melhorCasa == 2:
             self.Direita()
-            self.PraCima()
+            #self.PraCima()
         elif melhorCasa == 3:
             self.Direita()
-            self.PraBaixo()
+            #self.PraBaixo()
 
         elif melhorCasa == 5:
             self.Esquerda()
-            self.Esquerda()
+            #self.Esquerda()
         elif melhorCasa == 6:
             self.Esquerda()
-            self.PraCima()
+            #self.PraCima()
         elif melhorCasa == 7:
             self.Esquerda()
-            self.PraBaixo()
+            #self.PraBaixo()
 
         elif melhorCasa == 8:
             self.PraCima()
-            self.Direita()
+            #self.Direita()
         elif melhorCasa == 9:
             self.PraCima()
-            self.Esquerda()
+            # self.Esquerda()
         elif melhorCasa == 10:
             self.PraCima()
-            self.PraCima()
+            # self.PraCima()
 
         elif melhorCasa == 12:
             self.PraBaixo()
-            self.Direita()
+            #self.Direita()
         elif melhorCasa == 13:
             self.PraBaixo()
-            self.Esquerda()
+            #self.Esquerda()
         elif melhorCasa == 15:
             self.PraBaixo()
+            # self.PraBaixo()
+
+    def SimularJogada(self):
+        seqjogadas = []
+        # PlotarMatriz(self.WS)
+        njogadas = 200
+        for count in range(njogadas):
+            self.MO, lista_pos = self.agente._Construir_Matriz_Opcoes_Jogadas()
+            # print('Matriz 2 Jogadas')
+            # print(self.MO)
+            paresestadosjogadas, listajogadas = self.agente.ObterParesJogadas()
+            npossiveisjogadas = len(paresestadosjogadas)
+            notas = []
+            for indice in range(npossiveisjogadas):
+                notas.append(self.agente.ObterNota(paresestadosjogadas[indice][0], paresestadosjogadas[indice][1]))
+                '''
+                if (self.ObterNota(paresestadosjogadas[indice][0], paresestadosjogadas[indice][1]) ==  None):
+                    print('indice = %d' %(indice))
+                    print(paresestadosjogadas[indice])
+                '''
+
+            print(notas)
+            print(max(notas))
+            max_value, max_indices = self.agente.find_max_indices(notas)
+            print(max_value)
+            print(max_indices)
+            nsorteio = len(max_indices)
+            indsorteio = np.random.randint(0, nsorteio)
+            print('nsorteio')
+            print(nsorteio)
+            print('indsorteio')
+            print(indsorteio)
+            jogada = listajogadas[max_indices[indsorteio]]
+            print(jogada)
+            seqjogadas.append(self.agente.dict_move[jogada])
+            print(seqjogadas)
+            self.agente.Jogar(jogada)
+            self.Jogar(jogada)
+            print(self.agente.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+            print(self.agente.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+            print(max_value)
+            if (max_value == 10) or (max_value == 1):
+                print('Encerrar o Jogo')
+                print(self.agente.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
+                break
+                # pause()
+                # self.Reset()
+
+    def Jogar(self, jogada):
+        # Direita
+        if (jogada == 0):
+            self.Direita()
+        # Esquerda
+        elif (jogada == 1):
+            self.Esquerda()
+        # Pra Cima
+        elif (jogada == 2):
+            self.PraCima()
+        # Prabaixo
+        elif (jogada == 3):
             self.PraBaixo()
 
     def _JogarAutomatico(self):
+        '''
         if not self.jogo_acabou and not self.coluna_agente == self.n - 1:
             self.jogar_automatico.setEnabled(False)
             self._umaJogada()
@@ -260,6 +332,8 @@ class QtWumpus(QWidget):
             QTimer.singleShot(2000, self._JogarAutomatico)  # Espera 1 segundo antes da próxima jogada automática
         else:
             self.jogar_automatico.setEnabled(True)  # Reativa o botão após o jogo automático terminar
+        '''
+        self.SimularJogada()
 
     def Interface_Botoes(self):
 
@@ -444,6 +518,8 @@ class QtWumpus(QWidget):
             self._EscreveLabel()
             self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
+            # pause()
+
 
 
     def PraBaixo(self):
@@ -463,6 +539,7 @@ class QtWumpus(QWidget):
             self._EscreveLabel()
             self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
+            #pause()
 
     def Direita(self):
         print('Direita')
@@ -481,6 +558,7 @@ class QtWumpus(QWidget):
             self._EscreveLabel()
             self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
+            #pause()
 
     def Esquerda(self):
         print('Esquerda')
@@ -499,6 +577,7 @@ class QtWumpus(QWidget):
             self._EscreveLabel()
             self.agente.SetPosicaoAgente(self.linha_agente, self.coluna_agente)
             self._VerificarFimJogo()
+            # pause()
 
     def _VerificarFimJogo(self):
         casasDerrota = [2,6]
