@@ -256,6 +256,13 @@ class Agente:
 
         return linha, coluna
 
+    def _FoiPossivelaJogada(self, linha, coluna, linha_jogada, coluna_jogada):
+        if ( linha == linha_jogada) and(coluna == coluna_jogada):
+            return False
+        else:
+            return True
+
+
     def _Construir_Matriz_Opcoes_Jogadas(self):
 
         Matriz_Opcoes = self._Gerar_Matriz_Opcoes()
@@ -280,7 +287,8 @@ class Agente:
 
           for j in range(len(self.dict_move)):
             if (Matriz_Opcoes[jogada, j][0] == -1):
-              Matriz_Opcoes[jogada, j][0] = self.WM[linha_jogada, coluna_jogada]
+              if (self._FoiPossivelaJogada(linha, coluna, linha_jogada, coluna_jogada)):
+                Matriz_Opcoes[jogada, j][0] = self.WM[linha_jogada, coluna_jogada]
 
         print('Matriz uma Jogada')
         print(Matriz_Opcoes)
@@ -297,7 +305,10 @@ class Agente:
 
             for key in self.dict_move.keys():
                 linha_jogada, coluna_jogada = self.ObterPosicaoJogada(key, linha, coluna)
-                Matriz_Opcoes[key, i].append(self.WM[linha_jogada, coluna_jogada])
+                if (self._FoiPossivelaJogada(linha, coluna, linha_jogada, coluna_jogada)):
+                  Matriz_Opcoes[key, i].append(self.WM[linha_jogada, coluna_jogada])
+                else:
+                  Matriz_Opcoes[key, i].append([-1])
 
         return Matriz_Opcoes
 
