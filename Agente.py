@@ -228,8 +228,13 @@ class Agente:
 
     def GetWM(self):
         return self.WM
+        
     def GetWS(self):
         return self.WS
+        
+    def SetPosicaoAgente(self, linha_agente, coluna_agente):
+        self.linha_agente = linha_agente
+        self.coluna_agente = coluna_agente
 
     # Responde ao botao Reset
     def Reset(self):
