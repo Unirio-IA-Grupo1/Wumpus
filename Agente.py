@@ -131,7 +131,7 @@ class Agente:
         matrix = np.zeros((nopcoes, nopcoes), dtype=object)
         for i in range(nopcoes):
             for j in range(nopcoes):
-                matrix[i, j] = [-1]
+                matrix[i, j] = [[-1]]
         return matrix
 
     # Preenche células da Matrix com agente, Buraco, Wumpus e Ouro
@@ -286,7 +286,7 @@ class Agente:
 
 
           for j in range(len(self.dict_move)):
-            if (Matriz_Opcoes[jogada, j][0] == -1):
+            if (Matriz_Opcoes[jogada, j][0] == [-1]):
               if (self._FoiPossivelaJogada(linha, coluna, linha_jogada, coluna_jogada)):
                 Matriz_Opcoes[jogada, j][0] = self.WM[linha_jogada, coluna_jogada]
 
