@@ -81,10 +81,11 @@ def PlotarMatriz(LM):
 
 
 class Agente:
-    def __init__(self, n = 4, percent_pits = 15 ):
+    def __init__(self, n = 4, percent_pits = 15 , visibilidade = 2):
         # Propriedades
         self.n = n
         self.percent_pits = percent_pits
+        self.visibilidade = visibilidade
         self.npits = int(self.n * self.n * self.percent_pits / 100)
         self.nwumpus = 1
         self.nouro = 1
@@ -93,7 +94,7 @@ class Agente:
         self.dict_agent = {'Vazio': 0, 'Agente': 1, 'Wumpus': 2, 'Brisa': 3, 'Cheiro': 4, 'Ouro': 5, 'Buraco': 6,
                       'Brilho': 7}
         self.reverse_dict_agent = {value: key for key, value in self.dict_agent.items()}
-        self.dict_move = {0: 'Direita', 1: 'Esquerda', 2: 'PraCima', 3: 'Pra Baixo'}
+        self.dict_move = {0: 'Direita', 1: 'Esquerda', 2: 'PraCima', 3: 'PraBaixo'}
         self.dict_nobjs = {'Agente': self.nagente, 'Buraco': self.npits, 'Wumpus': self.nwumpus, 'Ouro': self.nouro}
         self.dict_efeitos = {'Wumpus': 'Cheiro', 'Buraco': 'Brisa', 'Ouro': 'Brilho'}
         # Matrizes de Listas e posicao inicial do agente
@@ -123,6 +124,14 @@ class Agente:
         for i in range(self.n):
             for j in range(self.n):
                 matrix[i, j] = [0]
+        return matrix
+
+    def _Gerar_Matriz_Opcoes(self):
+        nopcoes = len(self.dict_move)
+        matrix = np.zeros((nopcoes, nopcoes), dtype=object)
+        for i in range(nopcoes):
+            for j in range(nopcoes):
+                matrix[i, j] = [-1]
         return matrix
 
     # Preenche células da Matrix com agente, Buraco, Wumpus e Ouro
@@ -227,27 +236,76 @@ class Agente:
         self.WM, self.WS, self.linha_agente, self.coluna_agente = self._GeraMatrizes_Posicao_Inicial_Agente()
         # Alterar Tela
 
+    def ObterPosicaoJogada(self, jogada, linha, coluna):
+        # Direita
+        if (jogada == 0):
+            if (coluna != self.n-1):
+                coluna += 1
+        # Esquerda
+        elif (jogada == 1):
+            if (coluna != 0):
+                coluna -= 1
+        # Pra Cima
+        elif (jogada == 2):
+            if (linha != 0):
+                linha -= 1
+        # Pra Baixo
+        elif (jogada == 3):
+            if (linha != self.n-1):
+                linha += 1
 
-    # Manter para possivel futura implementação de agente autonomo
-    def SimularJogo(self, njogadas):
-        for i in range(njogadas):
-            # Sortear a direção para qual ir
-            # usando np.random.randint(0, self.4) e  self.dict_move
-            # Imprimir o número da jogada
-            print('Jogador escolhe (direta ou esquerda, ou pra cima ou pra baixo) i = %d'%(i))
-            # Imprimir o sentido da jogada (direita, esquerda, pra baixo, pra cima)
-            # Imprimir a Matriz WS (Matriz  de Strings)
-            # Imprimir o resultado da ação
-            # print('Sentindo Briza')
-            # print('Sentindo Cheiro')
-            # print('Detectou Brilho')
-            # print('Caiu no Buraco')
-            # print('Detonado pelo Wumpus')
-            # print('Ganhou o Tesouro)
-            # pausar usando a funcao pause()
-            # Avaliar visualmente a coerencia do resultado da ação
-            # Digitar qualquer caracter para prosseguir jogando
+        return linha, coluna
 
+    def _Construir_Matriz_Opcoes_Jogadas(self):
+
+        Matriz_Opcoes = self._Gerar_Matriz_Opcoes()
+        print(Matriz_Opcoes)
+
+        linha = self.linha_agente
+        coluna = self.coluna_agente
+        print('posicao inicial')
+        print(linha)
+        print(coluna)
+
+        lista_pos = []
+
+        #for k in range(self.visibilidade):
+
+        for key in self.dict_move.keys():
+
+          jogada = key
+          linha_jogada, coluna_jogada = self.ObterPosicaoJogada(jogada, linha, coluna)
+          lista_pos.append((linha_jogada, coluna_jogada))
+
+
+          for j in range(len(self.dict_move)):
+            if (Matriz_Opcoes[jogada, j][0] == -1):
+              Matriz_Opcoes[jogada, j][0] = self.WM[linha_jogada, coluna_jogada]
+
+        print('Matriz uma Jogada')
+        print(Matriz_Opcoes)
+        Matriz_Opcoes = self._Pos_processar_Matriz_Opcoes(Matriz_Opcoes, lista_pos)
+
+        return Matriz_Opcoes, lista_pos
+
+
+    def _Pos_processar_Matriz_Opcoes(self, Matriz_Opcoes, lista_pos):
+
+        for i in range(len(lista_pos)):
+            linha = lista_pos[i][0]
+            coluna = lista_pos[i][1]
+
+            for key in self.dict_move.keys():
+                linha_jogada, coluna_jogada = self.ObterPosicaoJogada(key, linha, coluna)
+                Matriz_Opcoes[key, i].append(self.WM[linha_jogada, coluna_jogada])
+
+        return Matriz_Opcoes
+
+
+    def SimularJogo(self):
+        MO, lista_pos = self._Construir_Matriz_Opcoes_Jogadas()
+        print('Matriz 2 Jogadas')
+        print(MO)
 
 
 if __name__ == '__main__':
@@ -282,7 +340,9 @@ if __name__ == '__main__':
     print(WS)
 
     # Plotar Matriz - só aceita n = 4
-    PlotarMatriz(WS)
+    # PlotarMatriz(WS)
+
+    '''
 
     # Teste de Reset
     agente.Reset()
@@ -294,4 +354,7 @@ if __name__ == '__main__':
 
     # Plotar Matriz - só aceita n = 4
     PlotarMatriz(WS)
+    '''
+
+    agente.SimularJogo()
 
