@@ -293,7 +293,6 @@ class Agente:
         print('Matriz uma Jogada')
         print(Matriz_Opcoes)
         Matriz_Opcoes = self._Pos_processar_Matriz_Opcoes(Matriz_Opcoes, lista_pos)
-
         return Matriz_Opcoes, lista_pos
 
 

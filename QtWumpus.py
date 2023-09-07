@@ -1,7 +1,11 @@
+import random
 import sys
+import asyncio
+from idlelib import debugger
+
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 import Agente as ag
 
 
@@ -135,6 +139,13 @@ class QtWumpus(QWidget):
         self.botao_normal_teste.move(self.pixels_x_up_arrow_coords-50, self.pixels_y_up_arrow_coords + 180)
         self.botao_normal_teste.clicked.connect(self._NormalTeste)
 
+        # Cria botão de chaveamento entre os modos Normal e Teste
+        self.jogar_automatico = QPushButton('Jogar automaticamente', self)
+        self.jogar_automatico.resize(self.pixels_x_button_size + 60, self.pixels_y_button_size)
+        self.jogar_automatico.move(self.pixels_x_up_arrow_coords - 50, self.pixels_y_up_arrow_coords + 280)
+        self.jogar_automatico.clicked.connect(self._JogarAutomatico)
+
+
         # Inserindo um bloco de elemetos
         self.Interface_Botoes()
 
@@ -161,8 +172,96 @@ class QtWumpus(QWidget):
         self._DeleteGridLabel()
         self.Interface_Matriz_Labels()
 
-    def Interface_Botoes(self):
+    def _ValorCasa(self,casa):
+        for valor in casa:
+            print("Casa" + str(casa))
+            if -1 in valor:
+                return -10
+            if 2 in valor or 6 in valor:
+                return -1000
+            if 3 in valor or 4 in valor:
+                return -10
+            if 7 in valor:
+                return 10
+            if 5 in valor:
+                return 1000
+            else:
+                return 0
 
+    def _umaJogada(self):
+        MO, listaOp = self.agente._Construir_Matriz_Opcoes_Jogadas()
+
+        melhorCasa = [4,-20]
+
+        jogadasInuteis = [1,4,11,14]
+
+        cont = 0
+
+        for linha in MO:
+            for elemento in linha:
+                # print("elemento " + str(elemento))
+                if self._ValorCasa(elemento) > melhorCasa[1] and (not cont in jogadasInuteis):
+                    melhorCasa = [cont,self._ValorCasa(elemento)]
+                cont += 1
+
+        print("Melhor casa pos " + str(melhorCasa[0]) + " Melhor casa val " + str(melhorCasa[1]))
+
+
+        self._Jogada(melhorCasa[0])
+
+    def _Jogada(self,melhorCasa):
+        print("Melhor jogada " + str(melhorCasa))
+
+        if melhorCasa == 0:
+            self.Direita()
+            self.Direita()
+        elif melhorCasa == 2:
+            self.Direita()
+            self.PraCima()
+        elif melhorCasa == 3:
+            self.Direita()
+            self.PraBaixo()
+
+        elif melhorCasa == 5:
+            self.Esquerda()
+            self.Esquerda()
+        elif melhorCasa == 6:
+            self.Esquerda()
+            self.PraCima()
+        elif melhorCasa == 7:
+            self.Esquerda()
+            self.PraBaixo()
+
+        elif melhorCasa == 8:
+            self.PraCima()
+            self.Direita()
+        elif melhorCasa == 9:
+            self.PraCima()
+            self.Esquerda()
+        elif melhorCasa == 10:
+            self.PraCima()
+            self.PraCima()
+
+        elif melhorCasa == 12:
+            self.PraBaixo()
+            self.Direita()
+        elif melhorCasa == 13:
+            self.PraBaixo()
+            self.Esquerda()
+        elif melhorCasa == 15:
+            self.PraBaixo()
+            self.PraBaixo()
+
+    def _JogarAutomatico(self):
+        if not self.jogo_acabou and not self.coluna_agente == self.n - 1:
+            self.jogar_automatico.setEnabled(False)
+            self._umaJogada()
+            print("Jogada Automática")
+            QTimer.singleShot(2000, self._JogarAutomatico)  # Espera 1 segundo antes da próxima jogada automática
+        else:
+            self.jogar_automatico.setEnabled(True)  # Reativa o botão após o jogo automático terminar
+
+    def Interface_Botoes(self):
 
         botao_pracima = QPushButton('PraCima', self)
         botao_pracima.resize(self.pixels_x_button_size, self.pixels_y_button_size)
@@ -214,8 +313,6 @@ class QtWumpus(QWidget):
         label_conteudo_alerta.setStyleSheet("border: 1px solid black;")
 
         return label_conteudo_alerta
-
-
 
     def _Elimina_Redundancia_Lista_String(self, input_list):
         # Create an empty set to store unique strings
@@ -283,29 +380,6 @@ class QtWumpus(QWidget):
                     label_widget = label_to_remove.widget()
                     label_widget.deleteLater()
 
-    def Reset(self):
-        self.agente.Reset()
-        # Obter Posição Inicial do agente
-        self.linha_agente, self.coluna_agente = self.agente.GetPosInicialAgente()
-        print("Posicao Inicial do Agente:")
-        print("linha_agente = %d" % (self.linha_agente))
-        print("coluna_agente = %d\n" % (self.coluna_agente))
-        # Obter Matriz de Códigos inteiros
-        self.WM = self.agente.GetWM()
-        print("Nova Matriz Wumpus Códigos Inteiros WM:")
-        print(self.WM)
-        print("\n")
-        self.label_conteudo_alerta.setText("Jogo Iniciou!")
-
-        # Obter Matriz de Labels
-        self.WS = self.agente.GetWS()
-        print("Nova Matriz Wumpus de Strings WS:")
-        print(self.WS)
-        self._DeleteGridLabelMatrix()
-        self._DeleteGridLabel()
-        self.Interface_Matriz_Labels()
-        self.jogo_acabou = False
-
     # Elimina redundancia de Strings na lista de Strings
     # a ser mostrada nos Labels da Matriz Wumpus
     def _EscreveLabel(self):
@@ -330,6 +404,28 @@ class QtWumpus(QWidget):
         self.grid_layout.addWidget(new_label, self.linha_agente, self.coluna_agente)
         self.grid_layout.itemAtPosition(self.linha_agente, self.coluna_agente).widget().setStyleSheet(
             "border: 1px solid black;")
+    def Reset(self):
+        self.agente.Reset()
+        # Obter Posição Inicial do agente
+        self.linha_agente, self.coluna_agente = self.agente.GetPosInicialAgente()
+        print("Posicao Inicial do Agente:")
+        print("linha_agente = %d" % (self.linha_agente))
+        print("coluna_agente = %d\n" % (self.coluna_agente))
+        # Obter Matriz de Códigos inteiros
+        self.WM = self.agente.GetWM()
+        print("Nova Matriz Wumpus Códigos Inteiros WM:")
+        print(self.WM)
+        print("\n")
+        self.label_conteudo_alerta.setText("Jogo Iniciou!")
+
+        # Obter Matriz de Labels
+        self.WS = self.agente.GetWS()
+        print("Nova Matriz Wumpus de Strings WS:")
+        print(self.WS)
+        self._DeleteGridLabelMatrix()
+        self._DeleteGridLabel()
+        self.Interface_Matriz_Labels()
+        self.jogo_acabou = False
 
     def PraCima(self):
         print('Pra Cima')
