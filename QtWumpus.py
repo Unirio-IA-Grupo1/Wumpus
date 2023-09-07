@@ -6,7 +6,7 @@ from idlelib import debugger
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import Qt, QTimer
-import Agente1 as ag
+import Agente as ag
 import numpy as np
 
 def pause():
