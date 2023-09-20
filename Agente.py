@@ -401,7 +401,7 @@ class Agente:
             pause()
 
     def ObterNota(self, estadoaposjogada1, estadoaposjogada2):
-        Nota = 3
+        Nota = 2
         # estado apos jogada 1 = "Ouro"
         if (estadoaposjogada1 == 5):
             Nota = 10
