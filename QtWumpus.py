@@ -161,7 +161,46 @@ class QtWumpus(QWidget):
         # Inserindo Labels de Estado e Alerta
         self.label_conteudo_alerta = self.Interface_Labels_Estado_Alerta()
 
+        # Opcoes de estrategia de jogadas
+        self.opcao_estrategia = 2
+
+        # Radio Buttons
+        # Crie um QFrame para conter todos os widgets
+        frame = QFrame(self)
+        frame.setGeometry(50, 50, 300, 200)  # Define a posição e o tamanho do QFrame em relação à janela principal
+
+        # Crie um layout vertical para o QFrame
+        layout = QVBoxLayout(frame)
+
+        # Crie outros widgets (labels, botões, etc.) e adicione-os ao layout do QFrame
+        label = QLabel("Selecione a Opção de Jogo Automático")
+        layout.addWidget(label)
+
+        # Adicione um espaçamento entre os radio-buttons e o label
+        layout.addSpacing(-60)  # Ajuste o valor conforme necessário para a separação desejada
+
+        # Crie e adicione os radio-buttons ao layout do QFrame
+        self.radio1 = QRadioButton("Opção 1")
+        layout.addWidget(self.radio1)
+
+        self.radio2 = QRadioButton("Opção 2")
+        layout.addWidget(self.radio2)
+
+        self.radio3 = QRadioButton("Opção 3")
+        layout.addWidget(self.radio3)
+
+        # Configure um slot para lidar com eventos de botão
+        self.radio1.toggled.connect(self._radio_button_selected)
+        self.radio2.toggled.connect(self._radio_button_selected)
+        self.radio3.toggled.connect(self._radio_button_selected)
+
+
         self.show()
+
+    def _radio_button_selected(self):
+        # Implemente a lógica para lidar com a seleção dos radio-buttons aqui
+        print("Opção Selecionada")
+        pass
 
     # Trata chaveamento do modo normal para modo teste e vice-versa
     def _NormalTeste(self):
@@ -189,6 +228,9 @@ class QtWumpus(QWidget):
                 return 10
             if 5 in valor:
                 return 1000
+            # Tratamento Santiago
+            if 1 in valor:
+                return -20
             else:
                 return 0
 
@@ -263,7 +305,8 @@ class QtWumpus(QWidget):
             self.PraBaixo()
             # self.PraBaixo()
 
-    def SimularJogada(self):
+    # Estrategia proposta por Marco
+    def _SimularEstrategia2(self):
         seqjogadas = []
         # PlotarMatriz(self.WS)
         njogadas = 200
@@ -303,12 +346,12 @@ class QtWumpus(QWidget):
             print(self.agente.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
             print(max_value)
             if (max_value == 10) or (max_value == 1):
-                print('Encerrar o Jogo')
+                print('Encerrar o Jogo apos %d jogadas' %(count+1))
                 print(self.agente.reverse_dict_agent[paresestadosjogadas[max_indices[indsorteio]][0]])
                 break
                 # pause()
                 # self.Reset()
-            self.label_conteudo_alerta.setText("Não convergiu D:!")
+            self.label_conteudo_alerta.setText("Não convergiu após "+ str(njogadas)+" jogadas D:!")
 
     def Jogar(self, jogada):
         # Direita
@@ -324,8 +367,8 @@ class QtWumpus(QWidget):
         elif (jogada == 3):
             self.PraBaixo()
 
-    def _JogarAutomatico(self):
-        '''
+    # Estrategia proposta por Santiago
+    def _SimularEstrategia1(self):
         if not self.jogo_acabou and not self.coluna_agente == self.n - 1:
             self.jogar_automatico.setEnabled(False)
             self._umaJogada()
@@ -333,8 +376,27 @@ class QtWumpus(QWidget):
             QTimer.singleShot(2000, self._JogarAutomatico)  # Espera 1 segundo antes da próxima jogada automática
         else:
             self.jogar_automatico.setEnabled(True)  # Reativa o botão após o jogo automático terminar
-        '''
-        self.SimularJogada()
+
+    def _show_selected_option(self):
+        self.jogar_automatico.setEnabled(True)
+        if self.radio1.isChecked():
+            self.opcao_estrategia = 1
+        elif self.radio2.isChecked():
+            self.opcao_estrategia = 2
+        elif self.radio3.isChecked():
+            self.opcao_estragegia = 3
+        else:
+            pass
+
+    def _JogarAutomatico(self):
+        self._show_selected_option()
+        if self.opcao_estrategia == 1:
+           self._SimularEstrategia1()
+        elif self.opcao_estrategia == 2:
+            self._SimularEstrategia2()
+        else:
+            print('Opção não implementada')
+
 
     def Interface_Botoes(self):
 
